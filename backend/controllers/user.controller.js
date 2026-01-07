@@ -1,0 +1,64 @@
+import asyncHandler from "express-async-handler";
+import User from "../models/userModel.js";
+import generateToken from "../config/generateToken.js";
+
+const registerUser = asyncHandler(async (req, res) => {
+  const { name, email, password, pic } = req.body;
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: "Please fill all fields" });
+  }
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    return res.status(400).json({ message: "Email already exists" });
+  }
+  const user = await User.create({
+    name,
+    email,
+    password,
+    pic,
+  });
+
+  generateToken(user._id);
+
+  if (user) {
+    res.status(201).json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      pic: user.pic,
+      token: generateToken(user._id),
+      message: "User created successfully",
+    });
+  } else {
+    res.status(400).json({ message: "Failed to create user" });
+  }
+});
+
+const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ message: "Please fill all fields" });
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(400).json({ message: "User not found" });
+  }
+
+  generateToken(user._id);
+
+  if (user) {
+    res.status(200).json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      pic: user.pic,
+      token: generateToken(user._id),
+      message: "User logged in successfully",
+    });
+  } else {
+    res.status(400).json({ message: "Failed to login user" });
+  }
+});
+
+export { registerUser, loginUser };
