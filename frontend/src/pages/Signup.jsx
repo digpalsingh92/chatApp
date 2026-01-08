@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   VStack,
@@ -8,18 +8,24 @@ import {
   Button,
   Box,
   IconButton,
-  Image,
-  Text,
-  HStack,
 } from "@chakra-ui/react";
-import { LuEye, LuEyeOff, LuUpload, LuX } from "react-icons/lu";
+import { LuEye, LuEyeOff } from "react-icons/lu";
+import {
+  registerStart,
+  registerSuccess,
+  registerFailure,
+} from "@/redux/slices/authSlice";
+import { useDispatch } from "react-redux";
+import { useRouter } from "next/navigation";
+import { setToken } from "@/utils/helper";
+import { toaster } from "@/components/ui/toaster";
+import axios from "axios";
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [profilePic, setProfilePic] = useState(null);
-  const [profilePicPreview, setProfilePicPreview] = useState(null);
-  const fileInputRef = useRef(null);
+  const router = useRouter();
+  const dispatch = useDispatch();
 
   const {
     register,
@@ -31,103 +37,68 @@ const Signup = () => {
       name: "",
       email: "",
       password: "",
-      confirmPassword: "",
     },
   });
 
   const password = watch("password");
 
-  const handleProfilePicChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setProfilePic(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfilePicPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+  const onSubmit = async (data) => {
+    try {
+      dispatch(registerStart());
+      if (
+        !data.email ||
+        !data.password ||
+        !data.name ||
+        !data.confirmPassword
+      ) {
+        toaster.create({
+          title: "Signup Failed",
+          description: "All fields are required",
+          type: "error",
+          duration: 4000,
+        });
+        return;
+      }
+      if (data.password !== data.confirmPassword) {
+        toaster.create({
+          title: "Signup Failed",
+          description: "Passwords do not match",
+          type: "error",
+          duration: 4000,
+        });
+        return;
+      }
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_WEB_URL}/api/user/register`,
+        data
+      );
+      setToken(response.data.token);
+      dispatch(registerSuccess(response.data));
+
+      toaster.create({
+        title: "Signup Successful",
+        description: response.data.message,
+        type: "success",
+        duration: 3000,
+      });
+      router.push("/chats");
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || error.message || "Signup failed";
+      dispatch(registerFailure(errorMessage));
+
+      toaster.create({
+        title: "Signup Failed",
+        description: errorMessage,
+        type: "error",
+        duration: 4000,
+      });
     }
-  };
-
-  const removeProfilePic = () => {
-    setProfilePic(null);
-    setProfilePicPreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const onSubmit = (data) => {
-    const formData = {
-      ...data,
-      profilePic: profilePic,
-    };
-
-    
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <VStack gap={4} py={4}>
-        <Field.Root width="100%">
-          <Field.Label color="black">Profile Picture</Field.Label>
-          <VStack width="100%" gap={2}>
-            {profilePicPreview ? (
-              <Box position="relative">
-                <Image
-                  src={profilePicPreview}
-                  alt="Profile Preview"
-                  boxSize="100px"
-                  borderRadius="full"
-                  objectFit="cover"
-                  border="3px solid"
-                  borderColor="teal.300"
-                />
-                <IconButton
-                  aria-label="Remove photo"
-                  position="absolute"
-                  top="-2"
-                  right="-2"
-                  size="xs"
-                  colorPalette="red"
-                  borderRadius="full"
-                  onClick={removeProfilePic}
-                >
-                  <LuX />
-                </IconButton>
-              </Box>
-            ) : (
-              <Box
-                boxSize="100px"
-                borderRadius="full"
-                bg="gray.100"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                border="2px dashed"
-                borderColor="gray.300"
-              >
-                <LuUpload size={24} color="gray" />
-              </Box>
-            )}
-            <Input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              display="none"
-              onChange={handleProfilePicChange}
-            />
-            <Button
-              size="sm"
-              variant="outline"
-              colorPalette="teal"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {profilePicPreview ? "Change Photo" : "Upload Photo"}
-            </Button>
-          </VStack>
-        </Field.Root>
-
         <Field.Root invalid={!!errors.name} width="100%">
           <Field.Label color="black">Name</Field.Label>
           <Input

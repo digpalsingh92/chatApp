@@ -1,10 +1,13 @@
 import React from 'react'
+import ChatsPage from '@/pages/Chats/ChatsPage'
 
 type Props = {}
 
 const page = (props: Props) => {
     return (
-        <div>page</div>
+        <div>
+            <ChatsPage />
+        </div>
     )
 }
 

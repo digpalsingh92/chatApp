@@ -8,6 +8,7 @@ import chatSocket from "./socket/chat.socket.js";
 import connectDB from "./config/db.js";
 import userRoute from "./routes/user.route.js";
 import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
+import updateProfileRoute from "./routes/updateProfile.route.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -20,6 +21,7 @@ const io = new Server(server, {
 });
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: "http://localhost:3000",
@@ -31,6 +33,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/user", userRoute);
+app.use("/uploads", express.static("uploads"));
+app.use("/api/profile", updateProfileRoute);
 app.use(notFound);
 app.use(errorHandler);
 

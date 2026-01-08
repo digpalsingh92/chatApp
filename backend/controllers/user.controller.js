@@ -45,20 +45,33 @@ const loginUser = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "User not found" });
   }
 
-  generateToken(user._id);
+  const isPasswordValid = await user.matchPassword(password);
+  if (!isPasswordValid) {
+    return res.status(401).json({ message: "Password is Incorrect" });
+  }
 
-  if (user) {
-    res.status(200).json({
+  res.status(200).json({
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    pic: user.pic,
+    token: generateToken(user._id),
+    message: "User logged in successfully",
+  });
+});
+
+const getUserProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id).select("-password");
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+  res.status(200).json({
+    user: {
       id: user._id,
       name: user.name,
       email: user.email,
       pic: user.pic,
-      token: generateToken(user._id),
-      message: "User logged in successfully",
-    });
-  } else {
-    res.status(400).json({ message: "Failed to login user" });
-  }
+    },
+  });
 });
-
-export { registerUser, loginUser };
+export { registerUser, loginUser, getUserProfile };

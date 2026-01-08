@@ -1,6 +1,14 @@
 "use client";
 import React, { useState } from "react";
+import { useDispatch } from "react-redux";
+import {
+  loginStart,
+  loginSuccess,
+  loginFailure,
+} from "@/redux/slices/authSlice";
+import axios from "axios";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import {
   VStack,
   Field,
@@ -9,11 +17,14 @@ import {
   Box,
   IconButton,
 } from "@chakra-ui/react";
+import { toaster } from "@/components/ui/toaster";
 import { LuEye, LuEyeOff } from "react-icons/lu";
+import { setToken } from "@/utils/helper";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-
+  const dispatch = useDispatch();
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -25,8 +36,35 @@ const Login = () => {
     },
   });
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (data) => {
+    try {
+      dispatch(loginStart());
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_WEB_URL}/api/user/login`,
+        data
+      );
+      setToken(response.data.token);
+      dispatch(loginSuccess(response.data));
+
+      toaster.create({
+        title: "Login Successful",
+        description: response.data.message,
+        type: "success",
+        duration: 3000,
+      });
+      router.push("/chats");
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || error.message || "Login failed";
+      dispatch(loginFailure(errorMessage));
+
+      toaster.create({
+        title: "Login Failed",
+        description: errorMessage,
+        type: "error",
+        duration: 4000,
+      });
+    }
   };
 
   return (
