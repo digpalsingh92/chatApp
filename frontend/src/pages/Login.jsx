@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import {
   loginStart,
@@ -19,7 +19,7 @@ import {
 } from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
 import { LuEye, LuEyeOff } from "react-icons/lu";
-import { setToken } from "@/utils/helper";
+import { setToken, getToken } from "@/utils/helper";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -35,6 +35,12 @@ const Login = () => {
       password: "",
     },
   });
+
+  useEffect(() => {
+    if (getToken()) {
+      router.push("/chats");
+    }
+  }, []);
 
   const onSubmit = async (data) => {
     try {

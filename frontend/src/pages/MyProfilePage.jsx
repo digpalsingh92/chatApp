@@ -5,6 +5,7 @@ import {
   Button,
   Flex,
   Input,
+  Menu,
   Text,
   Spinner,
 } from "@chakra-ui/react";
@@ -16,7 +17,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { BiLeftArrowAlt } from "react-icons/bi";
 import { useEffect } from "react";
-
+import { generateAvatar } from "@/utils/helper";
 
 const MyProfilePage = () => {
   const fileInputRef = useRef(null);
@@ -24,6 +25,7 @@ const MyProfilePage = () => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(null);
+  const [avatarType, setAvatarType] = useState("image");
   const router = useRouter();
   const {
     register,
@@ -43,6 +45,7 @@ const MyProfilePage = () => {
 
     setFile(selectedFile);
     setPreview(URL.createObjectURL(selectedFile));
+    setAvatarType("image");
   };
 
   useEffect(() => {
@@ -56,13 +59,13 @@ const MyProfilePage = () => {
             },
           }
         );
-  
+
         setUser(res.data.user);
         reset({
           name: res.data.user?.name || "",
           email: res.data.user?.email || "",
         });
-  
+
         if (res.data.user?.pic) {
           setPreview(res.data.user.pic);
         }
@@ -70,41 +73,48 @@ const MyProfilePage = () => {
         console.error("Failed to fetch profile", err);
       }
     };
-  
+
     fetchUserProfile();
   }, []);
 
   const onSubmit = async (data) => {
     try {
       setLoading(true);
-  
+
       const formData = new FormData();
       formData.append("name", data.name);
       formData.append("email", data.email);
-  
-      if (file) {
+
+      if (avatarType === "image" && file) {
         formData.append("image", file);
       }
-  
-      const res = await axios.put(`${process.env.NEXT_PUBLIC_WEB_URL}/api/profile`, formData, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-  
+
+      if (avatarType === "avatar" && preview) {
+        formData.append("avatarUrl", preview);
+      }
+
+      const res = await axios.put(
+        `${process.env.NEXT_PUBLIC_WEB_URL}/api/profile`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+        }
+      );
+
       toaster.create({
         title: "Profile updated",
         description: res.data.message,
         type: "success",
         duration: 3000,
       });
+
       router.refresh();
     } catch (err) {
       toaster.create({
         title: "Something went wrong",
-        description:
-          err.response?.data?.message || err.message || "Failed to update profile",
+        description: err.response?.data?.message || err.message,
         type: "error",
         duration: 3000,
       });
@@ -115,7 +125,14 @@ const MyProfilePage = () => {
 
   return (
     <Flex minH="100vh" bg="gray.50" align="center" justify="center" p={4}>
-      <Box bg="white" w="100%" maxW="420px" p={6} borderRadius="xl" boxShadow="lg">
+      <Box
+        bg="white"
+        w="100%"
+        maxW="420px"
+        p={6}
+        borderRadius="xl"
+        boxShadow="lg"
+      >
         <BiLeftArrowAlt onClick={() => router.back()} />
         <Text fontSize="2xl" fontWeight="bold" textAlign="center" mb={6}>
           My Profile
@@ -132,14 +149,40 @@ const MyProfilePage = () => {
             />
           </Avatar.Root>
 
-          <Button
-            mt={3}
-            size="sm"
-            colorScheme="teal"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            Change Photo
-          </Button>
+          <Menu.Root>
+            <Menu.Trigger asChild>
+              <Button mt={3} size="sm" colorScheme="teal">
+                Change Photo
+              </Button>
+            </Menu.Trigger>
+
+            <Menu.Positioner>
+              <Menu.Content>
+                <Menu.Item
+                cursor="pointer"
+                  value="upload"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  Upload Image
+                </Menu.Item>
+
+                <Menu.Item
+                  cursor="pointer"
+                  value="avatar"
+                  onClick={() => {
+                    const avatar = generateAvatar(user?.name || "User");
+                    setPreview(avatar);
+                    setFile(null);
+                    setAvatarType("avatar");
+                  }}
+                >
+                  Choose Avatar
+                </Menu.Item>
+
+                <Menu.Arrow />
+              </Menu.Content>
+            </Menu.Positioner>
+          </Menu.Root>
 
           <Input
             type="file"

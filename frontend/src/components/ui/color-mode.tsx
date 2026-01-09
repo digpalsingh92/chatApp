@@ -10,6 +10,20 @@ import { LuMoon, LuSun } from "react-icons/lu"
 export interface ColorModeProviderProps extends ThemeProviderProps {}
 
 export function ColorModeProvider(props: ColorModeProviderProps) {
+  // Delay rendering ThemeProvider until after mount to avoid
+  // SSR vs CSR markup differences from the injected theme script.
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    // Render children without ThemeProvider on the server / before mount.
+    // This keeps the DOM structure stable so hydration doesn't mismatch.
+    return <>{props.children}</>
+  }
+
   return (
     <ThemeProvider attribute="class" disableTransitionOnChange {...props} />
   )

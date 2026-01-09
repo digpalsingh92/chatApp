@@ -1,6 +1,14 @@
-import { configureStore } from '@reduxjs/toolkit'
-import Reducer from '@/redux/reducer'
+import { configureStore } from '@reduxjs/toolkit';
+import  logger  from 'redux-logger';
+import rootReducer from '@/redux/reducer';
 
-export const store = configureStore({
-  reducer: Reducer,
-})
+const store = configureStore({
+  reducer: rootReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+      immutableCheck: false,
+    }).concat(logger),
+});
+
+export default store;

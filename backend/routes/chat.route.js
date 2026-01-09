@@ -1,5 +1,10 @@
-const router = require("express").Router();
+import express from "express";
+import { accessChat, fetchChats } from "../controllers/chat.controller.js";
+import protect from "../middleware/authMiddleware.js";
 
-router.get("/:roomId",);
+const router = express.Router();
+
+router.route("/").post(protect, accessChat);
+router.route("/").get(protect, fetchChats);
 
 export default router;

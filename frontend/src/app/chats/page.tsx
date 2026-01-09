@@ -1,14 +1,13 @@
-import React from 'react'
-import ChatsPage from '@/pages/Chats/ChatsPage'
+ "use client";
 
-type Props = {}
+import dynamic from "next/dynamic";
 
-const page = (props: Props) => {
-    return (
-        <div>
-            <ChatsPage />
-        </div>
-    )
-}
+const ChatsPage = dynamic(() => import("@/pages/Chats/ChatsPage"), {
+  ssr: false,
+});
 
-export default page
+const Page = () => {
+  return <ChatsPage />;
+};
+
+export default Page;

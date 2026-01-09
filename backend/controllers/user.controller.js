@@ -74,4 +74,21 @@ const getUserProfile = asyncHandler(async (req, res) => {
     },
   });
 });
-export { registerUser, loginUser, getUserProfile };
+
+const getAllUsers = asyncHandler(async (req, res) => {
+  const search = req.query.search;
+
+  const keywords = search ? {
+    $or: [
+      { name: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+    ],
+  } : {};
+
+  const users = await User.find({
+    ...keywords,
+    _id: { $ne: req.user._id }, // exclude current user
+  }).select("-password").sort({ createdAt: -1 });
+  res.status(200).json(users);
+})
+export { registerUser, loginUser, getUserProfile, getAllUsers };

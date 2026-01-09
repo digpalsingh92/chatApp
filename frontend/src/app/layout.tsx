@@ -4,6 +4,7 @@ import "./globals.css";
 import { Provider } from "@/components/ui/provider";
 import { Toaster } from "@/components/ui/toaster";
 import ReduxProvider from "@/app/ReduxProvider";
+import Header from "@/pages/Header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({
       >
         <ReduxProvider>
           <Provider>
+            <Header />
             {children}
             <Toaster />
           </Provider>
