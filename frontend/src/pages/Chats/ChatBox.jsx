@@ -46,11 +46,32 @@ const ChatBox = ({ activeChat, selectedChat }) => {
 
       const socket = socketRef.current;
 
-      // Setup user
-      socket.emit("setup", currentUserId);
+      // Connection event handlers
+      socket.on("connect", () => {
+        console.log("Socket connected:", socket.id);
+        // Setup user after connection
+        if (currentUserId) {
+          socket.emit("setup", currentUserId);
+        }
+      });
+
+      socket.on("connected", () => {
+        console.log("Socket setup complete for user:", currentUserId);
+        // Join current chat if one is active
+        if (activeChat?.id) {
+          console.log("Joining chat room after connection:", activeChat.id);
+          socket.emit("join chat", activeChat.id);
+        }
+      });
+
+      socket.on("disconnect", () => {
+        console.log("Socket disconnected");
+      });
 
       // Listen for new messages (set up once)
       socket.on("message received", (newMessage) => {
+        console.log("Message received via socket:", newMessage);
+        
         // Transform message to frontend format
         const transformedMessage = {
           id: newMessage._id,
@@ -63,29 +84,23 @@ const ChatBox = ({ activeChat, selectedChat }) => {
           }),
         };
 
-        // Only add if it's for the current chat (use ref to get latest value)
+        // Get chat ID - handle both populated object and string ID
         const chatId = newMessage.chat?._id || newMessage.chat;
-        if (chatId === activeChatIdRef.current) {
+        const currentChatId = activeChatIdRef.current;
+        
+        console.log("Comparing chat IDs - received:", chatId, "current:", currentChatId);
+        
+        // Only add if it's for the current chat (use ref to get latest value)
+        if (String(chatId) === String(currentChatId)) {
+          console.log("Adding message to Redux");
           dispatch(addMessage(transformedMessage));
+        } else {
+          console.log("Message is for a different chat, ignoring");
         }
       });
     }
 
-    // Join chat room when activeChat changes
-    if (activeChat?.id && socketRef.current) {
-      socketRef.current.emit("join chat", activeChat.id);
-    }
-
-    // Cleanup when activeChat changes
-    return () => {
-      if (socketRef.current && activeChat?.id) {
-        socketRef.current.emit("leave chat", activeChat.id);
-      }
-    };
-  }, [currentUserId, activeChat?.id, dispatch]);
-
-  // Cleanup socket on component unmount
-  useEffect(() => {
+    // Cleanup on unmount
     return () => {
       if (socketRef.current) {
         socketRef.current.off("message received");
@@ -93,7 +108,31 @@ const ChatBox = ({ activeChat, selectedChat }) => {
         socketRef.current = null;
       }
     };
-  }, []);
+  }, [currentUserId, dispatch]);
+
+  // Separate effect to handle joining/leaving chat rooms when activeChat changes
+  useEffect(() => {
+    if (!socketRef.current || !socketRef.current.connected) {
+      console.log("Socket not connected, cannot join chat room");
+      return;
+    }
+
+    if (!activeChat?.id) {
+      return;
+    }
+
+    console.log("Joining chat room:", activeChat.id);
+    socketRef.current.emit("join chat", activeChat.id);
+
+    // Cleanup: leave chat room when activeChat changes or component unmounts
+    return () => {
+      if (socketRef.current && socketRef.current.connected && activeChat?.id) {
+        console.log("Leaving chat room:", activeChat.id);
+        socketRef.current.emit("leave chat", activeChat.id);
+      }
+    };
+  }, [activeChat?.id]);
+
 
   // Fetch messages when activeChat changes
   useEffect(() => {
@@ -175,8 +214,11 @@ const ChatBox = ({ activeChat, selectedChat }) => {
       dispatch(addMessage(newMessage));
 
       // Emit message via socket for real-time delivery
-      if (socketRef.current && res.data) {
+      if (socketRef.current && socketRef.current.connected && res.data) {
+        console.log("Emitting new message via socket:", res.data);
         socketRef.current.emit("new message", res.data);
+      } else {
+        console.warn("Socket not connected, message sent but not broadcasted");
       }
     } catch (error) {
       console.error("Failed to send message:", error);

@@ -81,15 +81,29 @@ io.on("connection", (socket) => {
 
   // Handle new message
   socket.on("new message", (newMessageReceived) => {
+    console.log("New message received on socket:", newMessageReceived);
     const chat = newMessageReceived.chat;
 
-    if (!chat || !chat.users) {
-      console.log("Chat or users not defined");
+    if (!chat) {
+      console.log("Chat not defined in message");
       return;
     }
 
+    // Get chat ID - handle both populated object and string ID
+    const chatId = chat._id || chat;
+    
+    if (!chatId) {
+      console.log("Chat ID not found");
+      return;
+    }
+
+    console.log(`Emitting message to chat room: ${chatId}`);
+    
     // Emit to the chat room (all users in the chat will receive it)
-    io.to(chat._id).emit("message received", newMessageReceived);
+    // Exclude the sender so they don't receive their own message twice
+    socket.to(chatId).emit("message received", newMessageReceived);
+    
+    console.log(`Message emitted to room ${chatId}`);
   });
 
   // Handle typing indicator
