@@ -18,7 +18,7 @@ const registerUser = asyncHandler(async (req, res) => {
     pic,
   });
 
-  generateToken(user._id);
+  generateToken(user._id, user.email, user.name);
 
   if (user) {
     res.status(201).json({
@@ -26,7 +26,7 @@ const registerUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       pic: user.pic,
-      token: generateToken(user._id),
+      token: generateToken(user._id, user.email, user.name),
       message: "User created successfully",
     });
   } else {
@@ -55,7 +55,7 @@ const loginUser = asyncHandler(async (req, res) => {
     name: user.name,
     email: user.email,
     pic: user.pic,
-    token: generateToken(user._id),
+    token: generateToken(user._id, user.email, user.name),
     message: "User logged in successfully",
   });
 });
