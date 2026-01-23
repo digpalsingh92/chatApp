@@ -1,41 +1,26 @@
-import { Avatar, Box, Text } from "@chakra-ui/react";
+"use client";
+import { Avatar } from "@/components/ui/avatar";
 
 const UserListItem = ({ user, handleFunction }) => {
-
   return (
-    <Box
+    <div
       onClick={handleFunction}
-      cursor="pointer"
-      bg="#E8E8E8"
-      _hover={{
-        background: "#38B2AC",
-        color: "white",
-      }}
-      w="100%"
-      d="flex"
-      alignItems="center"
-      color="black"
-      px={3}
-      py={2}
-      mb={2}
-      borderRadius="lg"
+      className="cursor-pointer bg-[#E8E8E8] hover:bg-teal-500 hover:text-white w-full flex items-center text-black px-3 py-2 mb-2 rounded-lg transition-colors"
     >
-      <Avatar.Root
-        mr={2}
+      <Avatar
         size="sm"
-        cursor="pointer"
-      >
-        <Avatar.Fallback name={user.name} />
-        <Avatar.Image src={user.pic} />
-      </Avatar.Root>
-      <Box>
-        <Text>{user.name}</Text>
-        <Text fontSize="xs">
+        src={user.pic}
+        alt={user.name}
+        className="mr-2 shrink-0"
+      />
+      <div>
+        <p>{user.name}</p>
+        <p className="text-xs">
           <b>Email : </b>
           {user.email}
-        </Text>
-      </Box>
-    </Box>
+        </p>
+      </div>
+    </div>
   );
 };
 

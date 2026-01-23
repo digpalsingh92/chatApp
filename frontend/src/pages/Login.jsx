@@ -9,17 +9,12 @@ import {
 import axios from "axios";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import {
-  VStack,
-  Field,
-  Input,
-  Button,
-  Box,
-  IconButton,
-} from "@chakra-ui/react";
-import { toaster } from "@/components/ui/toaster";
+import { toaster } from "@/components/ui/toast";
 import { LuEye, LuEyeOff } from "react-icons/lu";
 import { setToken, getToken } from "@/utils/helper";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -75,15 +70,14 @@ const Login = () => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <VStack gap={4} py={4}>
-        <Field.Root invalid={!!errors.email} width="100%">
-          <Field.Label color="black">Email</Field.Label>
+      <div className="flex flex-col gap-4 py-4">
+        <div className="w-full">
+          <Label htmlFor="email" className="text-black">Email</Label>
           <Input
+            id="email"
             type="email"
             placeholder="Enter your email"
-            bg="white"
-            color="black"
-            borderColor="gray.300"
+            className="bg-white text-black border-gray-300 mt-1"
             {...register("email", {
               required: "Email is required",
               pattern: {
@@ -92,19 +86,19 @@ const Login = () => {
               },
             })}
           />
-          <Field.ErrorText>{errors.email?.message}</Field.ErrorText>
-        </Field.Root>
+          {errors.email && (
+            <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
+          )}
+        </div>
 
-        <Field.Root invalid={!!errors.password} width="100%">
-          <Field.Label color="black">Password</Field.Label>
-          <Box position="relative" width="100%">
+        <div className="w-full">
+          <Label htmlFor="password" className="text-black">Password</Label>
+          <div className="relative mt-1">
             <Input
+              id="password"
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
-              bg="white"
-              color="black"
-              borderColor="gray.300"
-              pr="40px"
+              className="bg-white text-black border-gray-300 pr-10"
               {...register("password", {
                 required: "Password is required",
                 minLength: {
@@ -113,31 +107,27 @@ const Login = () => {
                 },
               })}
             />
-            <IconButton
+            <button
+              type="button"
               aria-label={showPassword ? "Hide password" : "Show password"}
-              position="absolute"
-              right="0"
-              top="50%"
-              transform="translateY(-50%)"
-              variant="ghost"
-              size="sm"
+              className="absolute right-0 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded"
               onClick={() => setShowPassword(!showPassword)}
             >
-              {showPassword ? <LuEyeOff /> : <LuEye />}
-            </IconButton>
-          </Box>
-          <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
-        </Field.Root>
+              {showPassword ? <LuEyeOff size={16} /> : <LuEye size={16} />}
+            </button>
+          </div>
+          {errors.password && (
+            <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
+          )}
+        </div>
         <Button
           type="submit"
-          colorPalette="teal"
-          width="100%"
-          loading={isSubmitting}
-          onClick={handleSubmit(onSubmit)}
+          className="w-full"
+          disabled={isSubmitting}
         >
-          Login
+          {isSubmitting ? "Logging in..." : "Login"}
         </Button>
-      </VStack>
+      </div>
     </form>
   );
 };

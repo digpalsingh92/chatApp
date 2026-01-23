@@ -1,56 +1,82 @@
 "use client";
-import { Box, Flex, Text } from "@chakra-ui/react";
+import { useEffect, useRef } from "react";
 
 const SingleChat = ({ messages, currentUserId, emptyStateText }) => {
+  const bottomRef = useRef(null);
+
+  // Auto-scroll when new messages arrive
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
   if (!messages || messages.length === 0) {
     return (
-      <Flex h="100%" align="center" justify="center">
-        <Text fontSize="sm" color="gray.500" textAlign="center">
+      <div className="flex h-full items-center justify-center">
+        <p className="text-sm text-gray-500 text-center">
           {emptyStateText || "No messages in this chat yet."}
-        </Text>
-      </Flex>
+        </p>
+      </div>
     );
   }
 
   return (
-    <Box>
+    <div
+      className="h-full w-full overflow-y-auto overflow-x-hidden px-4 py-2"
+      style={{
+        scrollBehavior: "smooth",
+      }}
+    >
+      <style jsx>{`
+        div::-webkit-scrollbar {
+          width: 8px;
+        }
+        div::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        div::-webkit-scrollbar-thumb {
+          background: #cbd5e0;
+          border-radius: 4px;
+        }
+        div::-webkit-scrollbar-thumb:hover {
+          background: #a0aec0;
+        }
+      `}</style>
       {messages.map((message) => {
         const isOwn = message.senderId === currentUserId;
 
         return (
-          <Box key={message.id} mb={3} textAlign={isOwn ? "right" : "left"}>
-            <Text fontSize="xs" color="gray.500" mb={1}>
+          <div key={message.id} className="mb-3" style={{ textAlign: isOwn ? "right" : "left" }}>
+            <p className="text-xs text-gray-500 mb-1">
               {isOwn ? "You" : message.senderName}
-            </Text>
-            <Box
-              display="inline-block"
-              maxW="80%"
-              bg={isOwn ? "teal.500" : "gray.100"}
-              color={isOwn ? "white" : "gray.800"}
-              px={3}
-              py={2}
-              borderRadius="lg"
-              borderBottomRightRadius={isOwn ? "sm" : "lg"}
-              borderBottomLeftRadius={isOwn ? "lg" : "sm"}
-              boxShadow="sm"
+            </p>
+
+            <div
+              className={`inline-block max-w-[80%] px-3 py-2 rounded-lg shadow-sm ${
+                isOwn
+                  ? "bg-teal-500 text-white rounded-br-sm rounded-bl-lg"
+                  : "bg-gray-100 text-gray-800 rounded-br-lg rounded-bl-sm"
+              }`}
             >
-              <Text fontSize="sm">{message.content}</Text>
+              <p className="text-sm">{message.content}</p>
               {message.createdAt && (
-                <Text
-                  fontSize="xs"
-                  color={isOwn ? "teal.100" : "gray.500"}
-                  mt={1}
+                <p
+                  className={`text-xs mt-1 ${
+                    isOwn ? "text-teal-100" : "text-gray-500"
+                  }`}
                 >
                   {message.createdAt}
-                </Text>
+                </p>
               )}
-            </Box>
-          </Box>
+            </div>
+          </div>
         );
       })}
-    </Box>
+
+      <div ref={bottomRef} />
+    </div>
   );
 };
 
 export default SingleChat;
-

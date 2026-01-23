@@ -1,12 +1,8 @@
- "use client";
+import { checkLoggedOut } from "@/utils/checkAuth";
+import ChatsPage from "@/pages/Chats/ChatsPage";
 
-import dynamic from "next/dynamic";
-
-const ChatsPage = dynamic(() => import("@/pages/Chats/ChatsPage"), {
-  ssr: false,
-});
-
-const Page = () => {
+const Page = async () => {
+  await checkLoggedOut();
   return <ChatsPage />;
 };
 

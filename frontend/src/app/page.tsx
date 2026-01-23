@@ -1,77 +1,32 @@
 "use client";
-import { Box, Container, Tabs, Text } from "@chakra-ui/react";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function Home() {
   return (
-    <Container maxW="xl" centerContent>
-      <Box
-        d="flex"
-        justifyContent="center"
-        p={3}
-        bg="white"
-        w="100%"
-        m="40px 0 15px 0"
-        borderRadius="lg"
-        borderWidth="1px"
-        borderColor="white"
-      >
-        <Text fontSize="4xl" alignItems={"center"} color="black">
-          Chat
-        </Text>
-      </Box>
-      <Box
-        bg="white"
-        w="100%"
-        p={4}
-        borderRadius="lg"
-        borderColor={"white"}
-        borderWidth="1px"
-      >
-        <Tabs.Root
-          defaultValue="login"
-          variant="plain"
-          css={{
-            "--tabs-indicator-bg": "colors.teal.50",
-            "--tabs-indicator-shadow": "shadows.sm",
-            "--tabs-trigger-radius": "radii.full",
-          }}
-        >
-          <Tabs.List
-            width={"100%"}
-            display={"flex"}
-            justifyContent={"center"}
-            alignItems={"center"}
-          >
-            <Tabs.Trigger
-              width={"50%"}
-              value="login"
-              textAlign="center"
-              justifyContent="center"
-              color={"black"}
-            >
+    <div className="max-w-xl mx-auto">
+      <div className="flex justify-center p-3 bg-white w-full m-[40px_0_15px_0] rounded-lg border border-white">
+        <h1 className="text-4xl text-black">Chat</h1>
+      </div>
+      <div className="bg-white w-full p-4 rounded-lg border border-white">
+        <Tabs defaultValue="login">
+          <TabsList className="w-full flex justify-center items-center">
+            <TabsTrigger value="login" className="w-[50%] text-center">
               Login
-            </Tabs.Trigger>
-            <Tabs.Trigger
-              width={"50%"}
-              value="signup"
-              textAlign="center"
-              justifyContent="center"
-              color={"black"}
-            >
+            </TabsTrigger>
+            <TabsTrigger value="signup" className="w-[50%] text-center">
               Signup
-            </Tabs.Trigger>
-            <Tabs.Indicator />
-          </Tabs.List>
-          <Tabs.Content value="login">
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="login">
             <Login />
-          </Tabs.Content>
-          <Tabs.Content value="signup">
+          </TabsContent>
+          <TabsContent value="signup">
             <Signup />
-          </Tabs.Content>
-        </Tabs.Root>
-      </Box>
-    </Container>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
   );
 }

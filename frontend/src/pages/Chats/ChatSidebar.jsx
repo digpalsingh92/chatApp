@@ -1,66 +1,67 @@
 "use client";
-import { Box, Flex, Text, Avatar, Badge } from "@chakra-ui/react";
+
+import { Avatar } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 const ChatSidebar = ({ conversations, activeChatId, onSelectChat }) => {
   return (
-    <Box p={4} h="100%" overflowY="auto">
-      <Text fontWeight="bold" mb={3} fontSize="lg">
+    <aside className="h-full overflow-y-auto px-4 pt-4 pb-4 bg-gray-50">
+      <h2 className="mb-3 text-sm font-semibold text-gray-800 tracking-wide">
         Conversations
-      </Text>
+      </h2>
 
-      {conversations?.length === 0 && (
-        <Text fontSize="sm" color="gray.500">
+      {(!conversations || conversations.length === 0) && (
+        <p className="text-xs text-gray-500">
           No conversations yet. Start a new chat from the search above.
-        </Text>
+        </p>
       )}
 
       {conversations?.map((conversation) => {
         const isActive = conversation.id === activeChatId;
 
         return (
-          <Flex
+          <button
             key={conversation.id}
-            p={3}
-            mb={2}
-            alignItems="center"
-            borderRadius="md"
-            cursor="pointer"
-            bg={isActive ? "teal.50" : "transparent"}
-            borderWidth={isActive ? "1px" : "0"}
-            borderColor={isActive ? "teal.200" : "transparent"}
-            _hover={{ bg: isActive ? "teal.100" : "gray.100" }}
-            gap={3}
+            type="button"
             onClick={() => onSelectChat(conversation.id)}
+            className={[
+              "group flex w-full items-center gap-3 rounded-md px-3 py-2 mb-2 text-left transition-colors",
+              isActive
+                ? "bg-teal-50 border border-teal-200"
+                : "hover:bg-gray-100 border border-transparent",
+            ].join(" ")}
           >
-            <Avatar.Root
-                size="sm"
-                flexShrink={0}
-              >
-                <Avatar.Fallback name={conversation.name} />
-                <Avatar.Image src={conversation.avatar} />
-              </Avatar.Root>
-            <Box flex="1" minW={0}>
-              <Flex justify="space-between" align="center" mb={1}>
-                <Text fontWeight="medium" fontSize="sm" noOfLines={1}>
+            <Avatar
+              size="sm"
+              src={
+                conversation.avatar ||
+                "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg"
+              }
+              alt={conversation.name}
+              className="shrink-0"
+            />
+
+            <div className="min-w-0 flex-1">
+              <div className="mb-0.5 flex items-center justify-between gap-2">
+                <p className="truncate text-sm font-medium text-gray-900">
                   {conversation.name}
-                </Text>
+                </p>
                 {conversation.unreadCount ? (
-                  <Badge colorScheme="teal" borderRadius="full" fontSize="0.7rem">
+                  <Badge className="shrink-0">
                     {conversation.unreadCount}
                   </Badge>
                 ) : null}
-              </Flex>
-              <Text fontSize="xs" color="gray.500" noOfLines={1}>
+              </div>
+              <p className="truncate text-xs text-gray-500">
                 {conversation.lastMessage || "No messages yet"}
-              </Text>
-            </Box>
-          </Flex>
+              </p>
+            </div>
+          </button>
         );
       })}
-    </Box>
+    </aside>
   );
 };
 
 export default ChatSidebar;
-
 

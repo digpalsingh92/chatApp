@@ -1,3 +1,4 @@
+import { parseJwt } from "@/utils/helper";
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
@@ -16,7 +17,8 @@ const authSlice = createSlice({
       state.error = null;
     },
     loginSuccess: (state, action) => {
-      state.userDetails = action.payload;
+      const decodedData = parseJwt(action.payload.token);
+      state.userDetails = decodedData;
       state.isAuthenticated = true;
       state.loading = false;
     },
@@ -30,7 +32,8 @@ const authSlice = createSlice({
       state.error = null;
     },
     registerSuccess: (state, action) => {
-      state.user = action.payload;
+      const decodedData = parseJwt(action.payload.token);
+      state.userDetails = decodedData;
       state.isAuthenticated = true;
       state.loading = false;
     },
@@ -40,6 +43,7 @@ const authSlice = createSlice({
     },
 
     logout: (state) => {
+      removeToken();
       state.userDetails = {};
       state.isAuthenticated = false;
     },

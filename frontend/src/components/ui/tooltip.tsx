@@ -1,46 +1,44 @@
-import { Tooltip as ChakraTooltip, Portal } from "@chakra-ui/react"
-import * as React from "react"
+"use client";
 
-export interface TooltipProps extends ChakraTooltip.RootProps {
-  showArrow?: boolean
-  portalled?: boolean
-  portalRef?: React.RefObject<HTMLElement | null>
-  content: React.ReactNode
-  contentProps?: ChakraTooltip.ContentProps
-  disabled?: boolean
+import * as React from "react";
+import { cn } from "@/lib/utils";
+
+export interface TooltipProps {
+  children: React.ReactNode;
+  content: React.ReactNode;
+  showArrow?: boolean;
+  disabled?: boolean;
 }
 
 export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
-  function Tooltip(props, ref) {
-    const {
-      showArrow,
-      children,
-      disabled,
-      portalled = true,
-      content,
-      contentProps,
-      portalRef,
-      ...rest
-    } = props
+  function Tooltip({ children, content, showArrow, disabled, ...props }, ref) {
+    const [isVisible, setIsVisible] = React.useState(false);
 
-    if (disabled) return children
+    if (disabled) return <>{children}</>;
 
     return (
-      <ChakraTooltip.Root {...rest}>
-        <ChakraTooltip.Trigger asChild>{children}</ChakraTooltip.Trigger>
-        <Portal disabled={!portalled} container={portalRef}>
-          <ChakraTooltip.Positioner>
-            <ChakraTooltip.Content ref={ref} {...contentProps}>
-              {showArrow && (
-                <ChakraTooltip.Arrow>
-                  <ChakraTooltip.ArrowTip />
-                </ChakraTooltip.Arrow>
-              )}
-              {content}
-            </ChakraTooltip.Content>
-          </ChakraTooltip.Positioner>
-        </Portal>
-      </ChakraTooltip.Root>
-    )
-  },
-)
+      <div
+        ref={ref}
+        className="relative inline-block"
+        onMouseEnter={() => setIsVisible(true)}
+        onMouseLeave={() => setIsVisible(false)}
+        {...props}
+      >
+        {children}
+        {isVisible && (
+          <div
+            className={cn(
+              "absolute z-50 min-w-[8rem] rounded-md border border-gray-200 bg-gray-900 px-3 py-1.5 text-sm text-white shadow-md",
+              "bottom-full left-1/2 -translate-x-1/2 mb-2"
+            )}
+          >
+            {content}
+            {showArrow && (
+              <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900" />
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+);

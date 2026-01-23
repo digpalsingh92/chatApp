@@ -1,23 +1,23 @@
 "use client";
-import {
-  Avatar,
-  Box,
-  Button,
-  Flex,
-  Input,
-  Menu,
-  Text,
-  Spinner,
-} from "@chakra-ui/react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toaster } from "@/components/ui/toaster";
+import { toaster } from "@/components/ui/toast";
 import { getToken } from "@/utils/helper";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { BiLeftArrowAlt } from "react-icons/bi";
-import { useEffect } from "react";
 import { generateAvatar } from "@/utils/helper";
+import { Avatar } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { Label } from "@/components/ui/label";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 const MyProfilePage = () => {
   const fileInputRef = useRef(null);
@@ -124,96 +124,75 @@ const MyProfilePage = () => {
   };
 
   return (
-    <Flex minH="100vh" bg="gray.50" align="center" justify="center" p={4}>
-      <Box
-        bg="white"
-        w="100%"
-        maxW="420px"
-        p={6}
-        borderRadius="xl"
-        boxShadow="lg"
-      >
-        <BiLeftArrowAlt onClick={() => router.back()} />
-        <Text fontSize="2xl" fontWeight="bold" textAlign="center" mb={6}>
-          My Profile
-        </Text>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-[420px] p-6 rounded-xl shadow-lg">
+        <BiLeftArrowAlt
+          onClick={() => router.back()}
+          className="cursor-pointer mb-4"
+          size={24}
+        />
+        <h2 className="text-2xl font-bold text-center mb-6">My Profile</h2>
 
-        <Flex direction="column" align="center" mb={6}>
-          <Avatar.Root size="2xl">
-            <Avatar.Fallback name="User" />
-            <Avatar.Image
-              src={
-                preview ||
-                "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg"
-              }
-            />
-          </Avatar.Root>
+        <div className="flex flex-col items-center mb-6">
+          <Avatar
+            size="2xl"
+            src={
+              preview ||
+              "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg"
+            }
+            alt="User"
+            className="mb-3"
+          />
 
-          <Menu.Root>
-            <Menu.Trigger asChild>
-              <Button mt={3} size="sm" colorScheme="teal">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" className="mt-3">
                 Change Photo
               </Button>
-            </Menu.Trigger>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Upload Image
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  const avatar = generateAvatar(user?.name || "User");
+                  setPreview(avatar);
+                  setFile(null);
+                  setAvatarType("avatar");
+                }}
+              >
+                Choose Avatar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-            <Menu.Positioner>
-              <Menu.Content>
-                <Menu.Item
-                cursor="pointer"
-                  value="upload"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  Upload Image
-                </Menu.Item>
-
-                <Menu.Item
-                  cursor="pointer"
-                  value="avatar"
-                  onClick={() => {
-                    const avatar = generateAvatar(user?.name || "User");
-                    setPreview(avatar);
-                    setFile(null);
-                    setAvatarType("avatar");
-                  }}
-                >
-                  Choose Avatar
-                </Menu.Item>
-
-                <Menu.Arrow />
-              </Menu.Content>
-            </Menu.Positioner>
-          </Menu.Root>
-
-          <Input
+          <input
             type="file"
             ref={fileInputRef}
             accept="image/*"
-            display="none"
+            className="hidden"
             onChange={handleImageChange}
           />
-        </Flex>
+        </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <Flex direction="column" gap={4}>
-            <Box>
-              <Text fontSize="sm" color="gray.500" mb={1}>
-                Full Name
-              </Text>
+          <div className="flex flex-col gap-4">
+            <div>
+              <Label className="text-sm text-gray-500 mb-1">Full Name</Label>
               <Input
                 placeholder="Enter your name"
                 {...register("name", { required: "Name is required" })}
               />
               {errors.name && (
-                <Text fontSize="xs" color="red.500">
-                  {errors.name.message}
-                </Text>
+                <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>
               )}
-            </Box>
+            </div>
 
-            <Box>
-              <Text fontSize="sm" color="gray.500" mb={1}>
-                Email
-              </Text>
+            <div>
+              <Label className="text-sm text-gray-500 mb-1">Email</Label>
               <Input
                 placeholder="Enter your email"
                 {...register("email", {
@@ -221,26 +200,21 @@ const MyProfilePage = () => {
                 })}
               />
               {errors.email && (
-                <Text fontSize="xs" color="red.500">
-                  {errors.email.message}
-                </Text>
+                <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
               )}
-            </Box>
+            </div>
 
             <Button
               type="submit"
-              mt={2}
-              backgroundColor="teal.500"
-              color="white"
-              _hover={{ backgroundColor: "teal.600" }}
+              className="mt-2"
               disabled={loading}
             >
               {loading ? <Spinner size="sm" /> : "Save Changes"}
             </Button>
-          </Flex>
+          </div>
         </form>
-      </Box>
-    </Flex>
+      </div>
+    </div>
   );
 };
 

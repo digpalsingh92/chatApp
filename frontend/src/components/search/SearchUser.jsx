@@ -1,24 +1,21 @@
 "use client";
 
-import {
-  Button,
-  Popover,
-  Portal,
-  Input,
-  Flex,
-  Box,
-  Text,
-  Spinner,
-} from "@chakra-ui/react";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { getToken } from "@/utils/helper";
 import { LuSearch } from "react-icons/lu";
-import { toaster } from "@/components/ui/toaster";
+import { toaster } from "@/components/ui/toast";
 import UserListItem from "../Users/UserListItem";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading, clearLoading, setSelectedChat } from "@/redux/slices/chatSlice";
-
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 
 const SearchUser = () => {
   const [search, setSearch] = useState("");
@@ -32,7 +29,7 @@ const SearchUser = () => {
     setUsers([]);
     setSearch("");
     setIsOpen(false);
-  }; 
+  };
 
   const handleSearch = async () => {
     if (!search) {
@@ -64,8 +61,6 @@ const SearchUser = () => {
     }
   };
 
-
-
   const accessChat = async (userId) => {
     dispatch(setLoading());
     try {
@@ -96,74 +91,57 @@ const SearchUser = () => {
   }, [search]);
 
   return (
-    <Popover.Root 
-      open={isOpen} 
-      onOpenChange={(e) => setIsOpen(e.open)}
-      positioning={{ offset: { mainAxis: 8 } }}
-    >
-      <Popover.Trigger asChild>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
         <div className="cursor-pointer px-[10px] py-[10px] bg-gray-200 rounded-md">
-       <LuSearch size={20} color="gray.700" />
+          <LuSearch size={20} color="gray.700" />
         </div>
-      </Popover.Trigger>
+      </PopoverTrigger>
 
-      <Portal>
-        <Popover.Positioner>
-          <Popover.Content
-            w="320px"
-            bg="#d9d9d9"           
-            border="1px solid"
-            borderColor="gray.300"
-            borderRadius="md"
-            boxShadow="lg"
+      <PopoverContent className="w-80 p-3">
+        <div className="flex flex-col gap-3">
+          <p className="font-medium text-gray-700">Search Users</p>
+
+          <div className="p-2">
+            <Input
+              placeholder="Search by name or email"
+              className="bg-white border-white"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          <Button
+            size="sm"
+            className="bg-teal-200 hover:bg-teal-300 p-2 w-[40%]"
+            onClick={handleSearch}
+            disabled={loading}
           >
-            <Popover.Body>
-              <Flex direction="column" gap={3}>
-                <Text fontWeight="medium" color="gray.700">
-                  Search Users
-                </Text>
+            {loading ? <Spinner size="sm" /> : "Search User"}
+          </Button>
 
-                <Input
-                  size="sm"
-                  placeholder="Search by name or email"
-                  bg="white"
-                  borderColor="#ffffff"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+          <div className="max-h-[200px] overflow-y-auto">
+            {loading ? (
+              <div className="flex justify-center py-4">
+                <Spinner size="sm" />
+              </div>
+            ) : users.length ? (
+              users.map((user) => (
+                <UserListItem
+                  key={user._id}
+                  user={user}
+                  handleFunction={() => accessChat(user._id)}
                 />
-
-                <Button
-                  size="sm"
-                  colorScheme="teal"
-                  onClick={handleSearch}
-                  isLoading={loading}
-                >
-                  Search User
-                </Button>
-
-                <Box maxH="200px" overflowY="auto">
-                  {loading ? (
-                    <Flex justify="center" py={4}>
-                      <Spinner size="sm" />
-                    </Flex>
-                  ) : users.length ? (
-                    users.map((user) => (
-                      <UserListItem key={user._id} user={user} handleFunction={() => accessChat(user._id)} />
-                    ))
-                  ) : (
-                    search && (
-                      <Text fontSize="sm" color="gray.600" mt={2}>
-                        No users found
-                      </Text>
-                    )
-                  )}
-                </Box>
-              </Flex>
-            </Popover.Body>
-          </Popover.Content>
-        </Popover.Positioner>
-      </Portal>
-    </Popover.Root>
+              ))
+            ) : (
+              search && (
+                <p className="text-sm text-gray-600 mt-2">No users found</p>
+              )
+            )}
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 };
 

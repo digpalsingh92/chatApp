@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Provider } from "@/components/ui/provider";
-import { Toaster } from "@/components/ui/toaster";
+
 import ReduxProvider from "@/app/ReduxProvider";
+import { ToastProvider } from "@/components/ui/toast";
 import Header from "@/pages/Header";
 
 const geistSans = Geist({
@@ -23,21 +23,20 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        style={{ display: "flex", height: "100vh", flexDirection: "column", overflow: "hidden" }}
       >
-        <ReduxProvider>
-          <Provider>
-            <Header />
-            {children}
-            <Toaster />
-          </Provider>
-        </ReduxProvider>
+        <ToastProvider>
+          <ReduxProvider>
+            <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>{children}</div>
+          </ReduxProvider>
+        </ToastProvider>
       </body>
     </html>
   );

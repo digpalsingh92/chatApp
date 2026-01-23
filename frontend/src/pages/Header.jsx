@@ -1,54 +1,64 @@
 "use client";
-import React from 'react'
-import SearchUser from '@/components/search/SearchUser'
-import { Flex, Text, Avatar, Box, Menu, Button, Portal } from '@chakra-ui/react'
-import { useRouter } from 'next/navigation'
-import { removeToken } from '@/utils/helper';
-import Link from 'next/link';
-import { LuBell } from 'react-icons/lu';
-
+import React from "react";
+import SearchUser from "@/components/search/SearchUser";
+import { useRouter } from "next/navigation";
+import { removeToken } from "@/utils/helper";
+import Link from "next/link";
+import { LuBell } from "react-icons/lu";
+import { Avatar } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
   const router = useRouter();
+
   return (
-  <div>
-  <Box bg="white" w="100%" p={4} borderColor="gray.200" borderWidth="1px" justifyContent="space-between" alignItems="center">
-    <Flex alignItems="center" justifyContent="space-between" gap={4} flexWrap="wrap">
-
-    <Flex>
-      <SearchUser />
-    </Flex>
-
-    <Text fontSize="2xl" fontWeight="bold">
-      <Link href="/">Chats</Link>
-    </Text>
-
-    <Menu.Root>
-      <Menu.Trigger asChild>
-        <div className="flex items-center gap-[15px]">
-          <LuBell size={20} className="cursor-pointer text-red-500 rounded-md p-2" />
-        <Avatar.Root size="md" name="Random User" src="https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg" cursor="pointer" >
-          <Avatar.Fallback name="Random User" />
-          <Avatar.Image src="https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg" />
-        </Avatar.Root>
+    <div className="bg-white w-full p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex">
+          <SearchUser />
         </div>
-      </Menu.Trigger>
-      <Portal>
-        <Menu.Positioner>
-          <Menu.Content>
-            <Menu.Item value="my-profile" onClick={() => router.push("/my-profile")}>My Profile</Menu.Item>
-            <Menu.Item value="logout" onClick={() => {
-              removeToken();
-              router.push("/");
-            }}>Logout</Menu.Item>
-          </Menu.Content>
-        </Menu.Positioner>
-      </Portal>
-    </Menu.Root>
-  </Flex>
-</Box>
-  </div>
-);
+
+        <h2 className="text-2xl font-bold">
+          <Link href="/">Chats</Link>
+        </h2>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <div className="flex items-center gap-[15px] cursor-pointer">
+              <LuBell
+                size={40}
+                className="text-red-500 rounded-md p-2"
+              />
+              <Avatar
+                size="md"
+                src="https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg"
+                alt="Random User"
+                className="cursor-pointer"
+              />
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => router.push("/my-profile")}>
+              My Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                removeToken();
+                router.push("/");
+              }}
+            >
+              Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  );
 };
 
 export default Header;

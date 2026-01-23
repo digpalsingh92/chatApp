@@ -1,12 +1,19 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Box, Grid, GridItem, Spinner, Flex, Text } from "@chakra-ui/react";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { getToken } from "@/utils/helper";
 import ChatSidebar from "./ChatSidebar";
 import ChatBox from "./ChatBox";
-import { setChats, setSelectedChat, setLoading, clearLoading, setError } from "@/redux/slices/chatSlice";
+import Header from "@/pages/Header";
+import {
+  setChats,
+  setSelectedChat,
+  setLoading,
+  clearLoading,
+  setError,
+} from "@/redux/slices/chatSlice";
+import { Spinner } from "@/components/ui/spinner";
 
 const ChatsPage = () => {
   const dispatch = useDispatch();
@@ -43,22 +50,20 @@ const ChatsPage = () => {
     fetchCurrentUser();
   }, [userDetails]);
 
-  // Transform backend chat data to frontend format
   const transformChat = (chat) => {
     if (!chat || !currentUserId) return null;
 
-    const otherUser = chat.users?.find(
-      (user) => String(user._id) !== String(currentUserId)
-    ) || chat.users?.[0];
+    // Get the other user (not the current user) for one-on-one chat
+    const otherUser =
+      chat.users?.find((user) => String(user._id) !== String(currentUserId)) ||
+      chat.users?.[0];
 
     if (!otherUser) return null;
 
     return {
       id: chat._id,
-      name: chat.isGroupChat ? chat.chatName : otherUser?.name || "Unknown",
-      avatar: chat.isGroupChat
-        ? "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg"
-        : otherUser?.pic || "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg",
+      name: otherUser?.name,
+      avatar: otherUser?.pic,
       lastMessage: chat.latestMessage?.content || "No messages yet",
       users: chat.users,
       latestMessage: chat.latestMessage,
@@ -82,20 +87,22 @@ const ChatsPage = () => {
         );
 
         setOriginalChats(res.data);
-        
+
         const transformedChats = res.data
           .map(transformChat)
           .filter((chat) => chat !== null);
-        
+
         dispatch(setChats(transformedChats));
-        
+
         if (transformedChats.length > 0 && !activeChatId) {
           setActiveChatId(transformedChats[0].id);
           dispatch(setSelectedChat(res.data[0]));
         }
       } catch (error) {
         console.error("Failed to fetch chats:", error);
-        dispatch(setError(error.response?.data?.message || "Failed to fetch chats"));
+        dispatch(
+          setError(error.response?.data?.message || "Failed to fetch chats")
+        );
       } finally {
         dispatch(clearLoading());
       }
@@ -118,43 +125,34 @@ const ChatsPage = () => {
 
   if (loading && chats.length === 0) {
     return (
-      <Flex h="100vh" align="center" justify="center" bg="white">
-        <Spinner size="xl" color="teal.500" />
-      </Flex>
+      <div className="flex h-screen items-center justify-center bg-white">
+        <Spinner size="xl" />
+      </div>
     );
   }
 
   return (
-    <Box
-      bg="white"
-      w="100%"
-      h={{ base: "100%", md: "100vh" }}
-      borderWidth="1px"
-      borderColor="gray.200"
-      overflow="hidden"
-    >
-      <Grid
-        h={{ base: "calc(100vh - 88px)", md: "calc(100vh - 80px)" }}
-        templateColumns={{ base: "1fr", md: "320px 1fr" }}
-      >
-        <GridItem
-          borderRight={{ base: "none", md: "1px solid" }}
-          borderBottom={{ base: "1px solid", md: "none" }}
-          borderColor="gray.200"
-          bg="gray.50"
-        >
+    <div className="flex flex-col h-screen w-full bg-white">
+      {/* Header at the top */}
+      <Header />
+
+      {/* Main content area: Sidebar on left, ChatBox on right */}
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* Sidebar on the left */}
+        <div className="w-[250px] shrink-0 border-r border-gray-200 bg-gray-50 overflow-hidden">
           <ChatSidebar
             conversations={chats}
             activeChatId={activeChatId}
             onSelectChat={handleSelectChat}
           />
-        </GridItem>
+        </div>
 
-        <GridItem>
+        {/* ChatBox on the right */}
+        <div className="flex-1 min-w-0 overflow-hidden">
           <ChatBox activeChat={activeChat} selectedChat={selectedChat} />
-        </GridItem>
-      </Grid>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 };
 
